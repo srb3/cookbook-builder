@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# adapted from: https://github.com/habitat-sh/on-prem-builder/blob/master/scripts/on-prem-archive.sh
+import_core_keys_and_packages() {
+  export HAB_AUTH_TOKEN=<%= node['builder']['origin']['core']['access_token'] || 'no_token_set' %>
+  export CORE_PATH=<%= node['builder']['core_extract_path'] %>
+
+  mkdir -p ${CORE_PATH}
+  tar zxvf <%= node['builder']['core_bootstrap_path'] %> -C ${CORE_PATH}
+  pushd ${CORE_PATH}
+  echo "Importing keys"
+  keys=$(find . -type f -name "*.pub")
+  key_total=$(echo "$keys" | wc -l)
+  key_count="0"
+
+  for key in $keys
+  do
+    key_count=$((key_count+1))
+    echo
+    echo "[$key_count/$key_total] Importing $key"
+    hab origin key import < "$key"
+  done
+  echo
+  popd
+  echo "Uploading hart files."
+
+  pushd ${CORE_PATH}/harts
+  for i in $(ls *.hart); do
+    for _ in {1..5};  do
+      echo "hab pkg upload --url \"http://$(hostname -i):8081\" --channel stable \"${i}\""
+      hab pkg upload --url "http://$(hostname -i):8081" --channel stable "${i}" && break
+      echo "Upload failed. Sleeping 5 seconds and retrying."
+      sleep 5
+    done
+  done
+  popd 
+  echo "Package uploads finished."
+}
+
+import_core_keys_and_packages
+# rm -rf ${CORE_PATH}
+touch <%= node['builder']['populate_lock_file'] %>

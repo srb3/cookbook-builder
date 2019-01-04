@@ -1,0 +1,55 @@
+---
+driver:
+  name: ec2
+  aws_ssh_key_id: # your aws ssh key pair name
+  region: # an aws region 
+  availability_zone: # an aws az
+  require_chef_omnibus: true
+  instance_type: # use t2.medium 
+  associate_public_ip: true
+  shared_credentials_profile: # if needed for okta
+  block_device_mappings:
+  - device_name: /dev/sda1 # extra space on root disk for all the packages
+    ebs:
+      volume_type: gp2
+      volume_size: 30
+      delete_on_termination: true
+
+provisioner:
+  name: chef_zero
+  always_update_cookbooks: true
+  product_name: chef
+  product_version: 13.6.4
+
+transport:
+  ssh_key: # path to the ssh key
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: rhel-7 # target platfrom is rhel 7
+
+suites:
+  - name: default
+    run_list:
+      - recipe[builder::default]
+    verifier:
+      inspec_tests:
+        - test/integration/default
+    attributes:
+      builder: 
+        create_user_and_group: true
+        internal_repo:  # A URL to the server that has all the artifacts needed
+#        origin:
+#          core:
+#            access_token: <when you have created the core origin and the hab access token put the token string here>
+        oauth:
+          provider: bitbucket # keep this as bitbucket for now
+          client_id:  # create a bitbucket account then create an oauth consumer to get the client id
+          client_secret: # create a bitbucket account then create an oauth consumer to get the client secret
+          userinfo_url: https://api.bitbucket.org/1.0/user
+          authorize_url: https://bitbucket.org/site/oauth2/authorize
+          token_url: https://bitbucket.org/site/oauth2/access_token
+          builder_url: http://kitchen-builder.test.com:8081 # this is arbitrary but must match the url setting in the oauth consumer - also 8081 is the default port used for the builder by this cookbook
+          redirect_url: http://kitchen-builder.test.com:8081/ # this is arbitrary but must match the callback_url setting in the oauth consumer

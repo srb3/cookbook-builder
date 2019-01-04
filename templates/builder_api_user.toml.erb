@@ -1,0 +1,39 @@
+log_level="error,tokio_core=error,tokio_reactor=error,zmq=error,hyper=error"
+jobsrv_enabled = false
+
+[http]
+handler_count = 10
+
+[api]
+features_enabled = ""
+targets = ["x86_64-linux", "x86_64-linux-kernel2", "x86_64-windows"]
+
+[depot]
+jobsrv_enabled = false
+
+[oauth]
+provider = "<%= node['builder']['oauth']['provider'] %>"
+userinfo_url = "<%= node['builder']['oauth']['userinfo_url'] %>"
+token_url = "<%= node['builder']['oauth']['token_url'] %>"
+redirect_url = "<%= node['builder']['oauth']['redirect_url'] %>"
+client_id = "<%= node['builder']['oauth']['client_id'] %>"
+client_secret = "<%= node['builder']['oauth']['client_secret'] %>"
+
+[segment]
+url = "https://api.segment.io"
+write_key = ""
+
+[s3]
+backend = "<%= node['builder']['s3']['backend'] %>"
+key_id = "<%= node['builder']['s3']['key_id'] %>"
+secret_key = "<%= node['builder']['s3']['secret_key'] %>"
+endpoint = "<%= node['builder']['s3']['endpoint'] %>"
+bucket_name = "<%= node['builder']['s3']['bucket_name'] %>"
+
+[memcache]
+ttl = 1
+
+[datastore]
+password = "<%= wait_get_file_content('/hab/svc/builder-datastore/config/pwfile') %>"
+connection_timeout_sec = 5
+user = "<%= node['builder']['hab_user'] %>"
