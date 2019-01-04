@@ -157,6 +157,7 @@ if node['builder']['origin']['core']['access_token']
 # origin for keys and packages
   execute 'builder_populate' do
     command '/usr/local/bin/builder_populate.sh'
+    timeout 10800 # the import can take a long time, trying 3 hours
     not_if { ::File.file?(node['builder']['populate_lock_file']) }
   end
 
