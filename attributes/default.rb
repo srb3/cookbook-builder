@@ -8,8 +8,8 @@ default['builder']['origin']['core']['access_token'] = nil
 # from Active Directory - also setting a flag to
 # create the user and group for testing
 default['builder']['create_user_and_group'] = false
-default['builder']['hab_user'] = 'test'
-default['builder']['hab_user_group'] = 'test'
+default['builder']['hab_user'] = 'sysbukdevopshabitat'
+default['builder']['hab_user_group'] = 'sysbukdevopshabitat'
 
 # set up a list of our artifacts and where to get them from
 # internal_repo: base url of a s3,webserver,nexus,artifactory or other file store
@@ -26,8 +26,8 @@ default['builder']['internal_repo'] = ''
 # ./keys/<all of the public keys from the services origins and dependent origins>
 # ./bin/hab - if the hab cli is needed for bootstrapping - builder bundle only
 # ./install.sh - needed if bootstrapping the builder otherwise not included
-default['builder']['archive_file_name'] = 'on-prem-builder-bundle-v0.4.1.tar.gz'
-default['builder']['archive_file_sha256sum'] = '75e6781858aa14da0f6918b6d9f867b52a09895fed597938612446cea5ed8ce2'
+default['builder']['archive_file_name'] = 'on-prem-builder-bundle-v0.5.8.tar.gz'
+default['builder']['archive_file_sha256sum'] = 'ae998fd5d1467931b7a64573bb79d9a6e577b9674043aeb7b7fb1c00523981e6'
 # normally this would be the entire contnent of the habitat core origin, to save
 # time I am just using a bundle of tomcat and it dependencies 
 # the structure of these files is as follows:
@@ -73,19 +73,19 @@ default['builder']['s3'] = {
 
 default['builder']['svc']['builder_memcached'] = {
   'user_dir' => '/hab/user/builder-memcached/config/',
-  'pkg' => 'habitat/builder-memcached',
+  'pkg' => 'devoptimist/builder-memcached',
   'args' => '--channel on-prem-builder --force',
 }
 
 default['builder']['svc']['builder_minio'] = {
   'user_dir' => '/hab/user/builder-minio/config/',
-  'pkg' => 'habitat/builder-minio',
+  'pkg' => 'devoptimist/builder-minio',
   'args' => '--channel on-prem-builder --force',
 }
 
 default['builder']['svc']['builder_api'] = {
   'user_dir' => '/hab/user/builder-api/config/',
-  'pkg' => 'habitat/builder-api',
+  'pkg' => 'devoptimist/builder-api',
   'args' => '--bind memcached:builder-memcached.default \
 --bind datastore:builder-datastore.default \
 --channel on-prem-builder --force',
@@ -93,7 +93,7 @@ default['builder']['svc']['builder_api'] = {
 
 default['builder']['svc']['builder_api_proxy'] = {
   'user_dir' => '/hab/user/builder-api-proxy/config/',
-  'pkg' => 'habitat/builder-api-proxy',
+  'pkg' => 'devoptimist/builder-api-proxy',
   'args' => '--bind http:builder-api.default --channel on-prem-builder --force',
   'http_port' => 8081,
 }

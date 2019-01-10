@@ -11,33 +11,33 @@ end
 
 directory node['builder']['archive_extract_path'] do
   recursive true 
-  owner node['builder']['hab_user']
-  group node['builder']['hab_user_group']
+#  owner node['builder']['hab_user']
+#  group node['builder']['hab_user_group']
 end
 
 remote_file node['builder']['archive_path'] do
   source node['builder']['archive_url']
-  owner node['builder']['hab_user']
-  group node['builder']['hab_user_group']
+#  owner node['builder']['hab_user']
+#  group node['builder']['hab_user_group']
   checksum node['builder']['archive_file_sha256sum']
 end
 
 execute 'extract_on_prem_archive' do
   command "tar xzf #{node['builder']['archive_path']} -C #{node['builder']['archive_extract_path']}"
   creates "#{node['builder']['archive_extract_path']}/harts"
-  user node['builder']['hab_user']
+#  user node['builder']['hab_user']
 end
 
 execute 'install_on_prem_builder' do
   command './install.sh'
   cwd node['builder']['archive_extract_path']
   not_if { ::File.directory?('/hab/pkgs') }
-  notifies :run, 'execute[change_ownership_of_hab_dir]', :immediately
+#  notifies :run, 'execute[change_ownership_of_hab_dir]', :immediately
 end
 
-execute 'change_ownership_of_hab_dir' do
-  command "chown -R #{node['builder']['hab_user']}:#{node['builder']['hab_user_group']} /hab"
-end
+#execute 'change_ownership_of_hab_dir' do
+#  command "chown -R #{node['builder']['hab_user']}:#{node['builder']['hab_user_group']} /hab"
+#end
 
 # Creating the user.toml directorys for each service
 # note: the on-prem-builder repo puts them in 
@@ -65,11 +65,11 @@ systemd_unit 'hab-sup.service' do
         'Description' => 'The Habitat Supervisor',
       },
       'Service' => {
-        'ExecStart' => '/bin/hab sup run',
+        'ExecStart' => '/bin/hab sup run --channel on-prem-builder',
         'Environment' => "SSL_CERT_FILE=#{hab_pkg_path('core/cacerts')}/ssl/cert.pem",
         'Restart' => 'on-failure',
-        'User' => node['builder']['hab_user'],
-        'Group' => node['builder']['hab_user_group'],
+        'User' => 'root',
+        'Group' => 'root',
       }.compact,
       'Install' => {
         'WantedBy' => 'default.target',
@@ -81,7 +81,13 @@ end
 
 service 'hab-sup' do
   action [:start, :enable]
+#  notifies :run, 'execute[wait_for_supervisor_start]', :immediately
 end
+
+#execute 'wait_for_supervisor_start' do
+#  command 'sleep 10'
+#  action :nothing
+#end
 
 # We need to start the data store service first. As part of its
 # init hoook it creates a database password file that is then used
@@ -101,7 +107,7 @@ ds_service.each do |name, params|
  execute "start_#{name}" do
     extend Builder::HabHelpers
     command "hab svc load #{params['pkg']} #{params['args']}"
-    user node['builder']['hab_user']
+#    user node['builder']['hab_user']
     not_if { hab_svc_running?(params['pkg']) }
   end
 end
@@ -119,7 +125,7 @@ other_services.each do |name, params|
   execute "start_#{name}" do
     extend Builder::HabHelpers
     command "hab svc load #{params['pkg']} #{params['args']}"
-    user node['builder']['hab_user']
+#    user node['builder']['hab_user']
     not_if { hab_svc_running?(params['pkg']) }
   end
 end
